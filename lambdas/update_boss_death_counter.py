@@ -3,10 +3,12 @@ import boto3
 import os
 from decimal import Decimal
 
-table_name = os.environ.get('TABLE_NAME')
+boto3.setup_default_session(profile_name='kotsial')
+table_name = os.environ.get('TABLE_NAME', 'fitness_souls')
 
 dynamodb = boto3.resource('dynamodb')
 fitnessSoulsTable = dynamodb.Table(table_name)
+
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
@@ -37,7 +39,7 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps(response, cls=DecimalEncoder)
+        'body': json.dumps(response['Attributes'], cls=DecimalEncoder)
     }
 
 
