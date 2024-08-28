@@ -4,8 +4,7 @@ import os
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 
-boto3.setup_default_session(profile_name='kotsial')
-table_name = os.environ.get('TABLE_NAME', 'fitness_souls')
+table_name = os.environ.get('TABLE_NAME')
 
 dynamodb = boto3.resource('dynamodb')
 fitnessSoulsTable = dynamodb.Table(table_name)
@@ -27,7 +26,7 @@ def lambda_handler(event, context):
 
     response = fitnessSoulsTable.query(
         KeyConditionExpression=user_equals & game_equals,
-        ProjectionExpression='bosses, exercises, exerciseStats, worldDeathCount'
+        ProjectionExpression='bosses, currentBoss, exercises, exerciseStats, worldDeathCount'
     )
 
     mapped_response = {}

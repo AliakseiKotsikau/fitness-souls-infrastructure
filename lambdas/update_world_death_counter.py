@@ -3,8 +3,7 @@ import boto3
 import os
 from decimal import Decimal
 
-boto3.setup_default_session(profile_name='kotsial')
-table_name = os.environ.get('TABLE_NAME', 'fitness_souls')
+table_name = os.environ.get('TABLE_NAME')
 
 dynamodb = boto3.resource('dynamodb')
 fitnessSoulsTable = dynamodb.Table(table_name)
@@ -38,5 +37,3 @@ def lambda_handler(event, context):
         'body': json.dumps(response['Attributes'], cls=DecimalEncoder)
     }
 
-
-print(lambda_handler({'user': 'kotsial', 'game': 'DarkSouls1'}, None))
