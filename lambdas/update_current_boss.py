@@ -19,15 +19,16 @@ class DecimalEncoder(json.JSONEncoder):
 def lambda_handler(event, context):
     user = event['user']
     game = event['game']
+    boss = event['boss']
 
     response = fitnessSoulsTable.update_item(
         Key={
             'user': user,
-            'game': f'{game}#worldDeaths'
+            'game': f'{game}#currentBoss'
         },
-        UpdateExpression='SET worldDeathCount = worldDeathCount + :increment',
+        UpdateExpression='SET currentBoss = :newBoss',
         ExpressionAttributeValues={
-            ':increment': Decimal(str(1))
+            ':newBoss': boss
         },
         ReturnValues="UPDATED_NEW"
     )
