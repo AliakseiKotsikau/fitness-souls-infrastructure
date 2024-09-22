@@ -2,9 +2,8 @@ import json
 import boto3
 import os
 from decimal import Decimal
-from boto3.dynamodb.conditions import Key
 
-table_name = os.environ.get('TABLE_NAME', 'fitness_souls')
+table_name = os.environ.get('TABLE_NAME')
 
 dynamodb = boto3.resource('dynamodb')
 fitness_souls_table = dynamodb.Table(table_name)
@@ -22,29 +21,25 @@ def lambda_handler(event, context):
     game = event['game']
     boss = event['boss']
 
-    user_equals = Key("user").eq(user)
-    game_equals = Key("game").begins_with(f'{game}')
+    item_key = {'user': user, 'game': game + '#bossDeaths'}
 
-    bosses_response = fitness_souls_table.query(
-        KeyConditionExpression=user_equals & game_equals,
-        ProjectionExpression='bosses'
-    )['Items'][0]['bosses']
+    bosses_response = fitness_souls_table.get_item(Key=item_key)['Item']['bosses']
 
-    order_numbers = list(map(lambda x: bosses_response[x]['orderNumber'], bosses_response))
-    last_order_number = max(order_numbers)
+    beaten_numbers = list(map(lambda x: bosses_response[x]['beatenNumber'], bosses_response))
+    last_beaten_number = max(beaten_numbers)
 
     response = fitness_souls_table.update_item(
         Key={
             'user': user,
             'game': f'{game}#bossDeaths'
         },
-        UpdateExpression='SET bosses.#boss.beaten = :beaten, bosses.#boss.orderNumber = :orderNumber',
+        UpdateExpression='SET bosses.#boss.beaten = :beaten, bosses.#boss.beatenNumber = :beatenNumber',
         ExpressionAttributeNames={
             '#boss': boss
         },
         ExpressionAttributeValues={
             ':beaten': True,
-            ':orderNumber': Decimal(str(last_order_number + 1))
+            ':beatenNumber': Decimal(str(last_beaten_number + 1))
         },
         ReturnValues="UPDATED_NEW"
     )
